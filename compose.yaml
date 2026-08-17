@@ -1,0 +1,96 @@
+name: ai-grc-lab
+
+services:
+  postgres:
+    image: postgres:18.6-alpine3.24
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_ADMIN_PASSWORD:?POSTGRES_ADMIN_PASSWORD is required}
+      POSTGRES_DB: postgres
+
+      N8N_DB_NAME: ${N8N_DB_NAME:-n8n}
+      N8N_DB_USER: ${N8N_DB_USER:-n8n_app}
+      N8N_DB_PASSWORD: ${N8N_DB_PASSWORD:?N8N_DB_PASSWORD is required}
+
+      TZ: Asia/Tokyo
+
+    volumes:
+      - postgres_data:/var/lib/postgresql
+      - ./sql/00-init-n8n-db.sh:/docker-entrypoint-initdb.d/00-init-n8n-db.sh:ro
+
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - pg_isready -U postgres -d postgres
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 10s
+
+    networks:
+      - lab
+
+  n8n:
+    image: docker.n8n.io/n8nio/n8n:2.34.6
+    restart: unless-stopped
+
+    ports:
+      - "127.0.0.1:5678:5678"
+
+    environment:
+      DB_TYPE: postgresdb
+      DB_POSTGRESDB_HOST: postgres
+      DB_POSTGRESDB_PORT: "5432"
+      DB_POSTGRESDB_DATABASE: ${N8N_DB_NAME:-n8n}
+      DB_POSTGRESDB_USER: ${N8N_DB_USER:-n8n_app}
+      DB_POSTGRESDB_PASSWORD: ${N8N_DB_PASSWORD:?N8N_DB_PASSWORD is required}
+      DB_POSTGRESDB_SCHEMA: public
+
+      N8N_ENCRYPTION_KEY: ${N8N_ENCRYPTION_KEY:?N8N_ENCRYPTION_KEY is required}
+      N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS: "true"
+      N8N_DIAGNOSTICS_ENABLED: "false"
+
+      GENERIC_TIMEZONE: Asia/Tokyo
+      TZ: Asia/Tokyo
+
+    volumes:
+      - n8n_data:/home/node/.n8n
+      - ./artifacts:/files
+
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+    networks:
+      - lab
+
+  mailpit:
+    image: axllent/mailpit:v1.30.7
+    restart: unless-stopped
+
+    ports:
+      - "127.0.0.1:8025:8025"
+
+    expose:
+      - "1025"
+
+    environment:
+      MP_DATABASE: /data/mailpit.db
+      MP_MAX_MESSAGES: "500"
+      TZ: Asia/Tokyo
+
+    volumes:
+      - mailpit_data:/data
+
+    networks:
+      - lab
+
+volumes:
+  postgres_data:
+  n8n_data:
+  mailpit_data:
+
+networks:
+  lab:
+    driver: bridge

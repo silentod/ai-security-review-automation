@@ -1,0 +1,61 @@
+{
+  "name": "Ollama GPU Smoke Test",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "4ee95d60-c555-4c34-b472-1d9523a1c4ab",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "qwen3:4b-instruct-2507-q4_K_M",
+          "mode": "list",
+          "cachedResultName": "qwen3:4b-instruct-2507-q4_K_M"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "あなたはセキュリティ審査担当です。\n次の申請内容を1文で要約してください。\n\n申請内容：\n公開済みのWeb記事を生成AIで校正する。\n個人情報は入力せず、外部システムとの連携も行わない。"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.ollama",
+      "typeVersion": 1,
+      "position": [
+        224,
+        0
+      ],
+      "id": "b157916f-3590-4094-88c0-e8eecae02f01",
+      "name": "Message a model"
+    }
+  ],
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Message a model",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "tags": []
+}

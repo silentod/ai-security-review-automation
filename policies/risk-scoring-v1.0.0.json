@@ -1,0 +1,85 @@
+{
+  "version": "1.0.0",
+  "purpose": "Deterministic triage scoring for validated SaaS and generative AI review requests.",
+  "bands": {
+    "low": {
+      "minimum": 0,
+      "maximum": 24
+    },
+    "medium": {
+      "minimum": 25,
+      "maximum": 69
+    },
+    "high": {
+      "minimum": 70,
+      "maximum": 100
+    }
+  },
+  "data_type_scoring": {
+    "aggregation": "maximum_selected_weight",
+    "weights": {
+      "public": 0,
+      "internal": 8,
+      "confidential": 20,
+      "personal": 20,
+      "credentials": 35,
+      "payment": 35
+    }
+  },
+  "field_weights": {
+    "access_level": {
+      "none": 0,
+      "read": 5,
+      "write": 15,
+      "admin": 25
+    },
+    "model_training": {
+      "not_applicable": 0,
+      "no": 0,
+      "optout": 5,
+      "unknown": 10,
+      "yes": 25
+    },
+    "sso_available": {
+      "yes": 0,
+      "unknown": 4,
+      "no": 8
+    },
+    "audit_logs": {
+      "yes": 0,
+      "unknown": 8,
+      "no": 15
+    },
+    "deletion_supported": {
+      "yes": 0,
+      "unknown": 8,
+      "no": 15
+    },
+    "business_criticality": {
+      "low": 0,
+      "medium": 8,
+      "high": 15
+    }
+  },
+  "data_region_unknown_points": 5,
+  "hard_review_flags": [
+    "RESTRICTED_DATA_TYPE",
+    "ADMIN_WITH_SENSITIVE_DATA",
+    "TRAINING_WITH_SENSITIVE_DATA",
+    "HIGH_CRITICALITY_WITHOUT_AUDIT_LOGS"
+  ],
+  "human_review_policy": {
+    "rule_levels_requiring_review": [
+      "medium",
+      "high"
+    ],
+    "review_on_ai_recommendation": true,
+    "review_on_risk_level_disagreement": true,
+    "review_on_human_review_disagreement": true
+  },
+  "reconciliation": {
+    "triage_risk_level": "maximum(rule_risk_level, ai_recommended_risk_level)",
+    "ai_may_lower_rule_floor": false,
+    "automatic_approval": false
+  }
+}
